@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["mclocalizer"]
+
+[project]
+name = "mclocalizer"
+version = "0.0.1"
+authors = [
+  {name="Jakub Kasprzak"},
+]
+description = "Tool for finding problematic classes in software repositories."
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dynamic = [
+    "dependencies", 
+    "optional-dependencies",
+]
+
+[project.urls]
+Homepage = "https://github.com/jkbkasprzak/mclocalizer"
+Issues = "https://github.com/jkbkasprzak/mclocalizer/issues"
+
+[project.scripts]
+mclocalizer = "mclocalizer.cli:main"
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.dynamic.optional-dependencies]
+dev = { file = ["requirements-dev.txt"] }
