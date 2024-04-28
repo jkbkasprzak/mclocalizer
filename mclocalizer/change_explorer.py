@@ -15,14 +15,14 @@ class ChangeExplorer(abc.ABC):
 
         :param file: file that has been modified by the commit
         :type file: pyd.ModifiedFile
-        :returns: list of identifiers that has been affected by the change
+        :returns: list of identifiers that have been affected by the change
         :rtype: List[str]
         """
         pass
 
 
 class ChangedFileExplorer(ChangeExplorer):
-    """Explorer that finds what files has been modified by the commit"""
+    """Explorer that finds what files have been modified by the commit"""
 
     def find_scope(self, file: pyd.ModifiedFile) -> List[str]:
         """Find the filename of modified file.
@@ -36,7 +36,7 @@ class ChangedFileExplorer(ChangeExplorer):
 
 
 class ChangedJavaClassExplorer(ChangeExplorer):
-    """Explorer that finds what java classes has been modified by the commit"""
+    """Explorer that finds what java classes have been modified by the commit"""
 
     _java_lang = ts.Language(tsjava.language(), "java")
     _query = _java_lang.query(

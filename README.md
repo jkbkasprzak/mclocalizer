@@ -9,7 +9,7 @@ Clone the repository:
 git clone https://github.com/jkbkasprzak/mclocalizer.git
 ```
 
-Install mclocalizer and it's dependencies using pip
+Install mclocalizer and its dependencies using pip
 
 ```sh
 cd mclocalizer
