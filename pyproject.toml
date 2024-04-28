@@ -9,7 +9,7 @@ packages = ["mclocalizer"]
 name = "mclocalizer"
 version = "0.0.1"
 authors = [
-  {name="Jakub Kasprzak"},
+    {name="Jakub Kasprzak"},
 ]
 description = "Tool for finding problematic classes in software repositories."
 readme = "README.md"
@@ -37,3 +37,11 @@ dependencies = { file = ["requirements.txt"] }
 
 [tool.setuptools.dynamic.optional-dependencies]
 dev = { file = ["requirements-dev.txt"] }
+
+[tool.black]
+    line-length = 88
+    target-version = ["py311"]
+
+[tool.isort]
+    line_length = 88
+    profile = "black"

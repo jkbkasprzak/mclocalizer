@@ -1,6 +1,8 @@
-from pydriller import Git, Commit
-from mclocalizer.bug import Bug
 import re
+
+from pydriller import Commit, Git
+
+from mclocalizer.bug import Bug
 
 
 def censor_comment(match: re.match):

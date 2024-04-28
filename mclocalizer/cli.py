@@ -1,12 +1,15 @@
 import argparse
-from mclocalizer.find_bug_scope import find_bug_scope
 import csv
+
+from tqdm import tqdm
+
+from mclocalizer.find_bug_scope import find_bug_scope
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="mclocalizer",
-        description=" Tool for finding problematic classes in software repositories.",
+        description="Tool for finding problematic classes in software repositories.",
     )
     parser.add_argument("repo", type=str, help="path to git repository.")
 
