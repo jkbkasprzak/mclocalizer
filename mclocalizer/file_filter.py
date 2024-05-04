@@ -1,6 +1,5 @@
 import abc
 import re
-from pathlib import PurePath
 from typing import Optional
 
 import pydriller as pyd
@@ -35,23 +34,16 @@ class NoTestDirFileFilter(FileFilter):
     """Filter that returns True only for files outside of test directories."""
 
     _pattern = re.compile(
-        r"(/test/|(/tested/)|(/tests/)|(/testing/)",
+        r"(\btest\b)|(\btested\b)|(\btests\b)|(\btesting\b)",
         re.IGNORECASE,
     )
-
-    def __init__(self, repo_root: PurePath) -> bool:
-        self._repo_root = repo_root
-        if not repo_root.is_absolute():
-            raise ValueError("Repository path is not absolute")
 
     def filter(self, file: pyd.ModifiedFile) -> bool:
         test_dir = False
         for path in (file.old_path, file.new_path):
             if path is not None:
-                rel_path = PurePath(path).relative_to(self._repo_root)
                 test_dir = test_dir or (
-                    re.search(NoTestDirFileFilter._pattern, rel_path.as_posix())
-                    is not None
+                    re.search(NoTestDirFileFilter._pattern, path) is not None
                 )
 
         return not test_dir
