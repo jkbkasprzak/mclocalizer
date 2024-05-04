@@ -11,7 +11,7 @@ class ChangeExplorer(abc.ABC):
 
     @abc.abstractmethod
     def find_scope(self, file: pyd.ModifiedFile) -> List[str]:
-        """Find what constructs were affected by the changes.
+        """Find what targets were affected by the changes.
 
         :param file: file that has been modified by the commit
         :type file: pyd.ModifiedFile
@@ -25,14 +25,18 @@ class ChangedFileExplorer(ChangeExplorer):
     """Explorer that finds what files have been modified by the commit"""
 
     def find_scope(self, file: pyd.ModifiedFile) -> List[str]:
-        """Find the filename of modified file.
+        """Find the path of modified file.
 
         :param file: file that has been modified by the commit
         :type file: pyd.ModifiedFile
         :returns: filename of modified file
         :rtype: List[str]
         """
-        return [file.filename]
+        paths = set()
+        for path in (file.new_path, file.old_path):
+            if path is not None:
+                paths.add(path)
+        return list(paths)
 
 
 class ChangedJavaClassExplorer(ChangeExplorer):
@@ -66,7 +70,7 @@ class ChangedJavaClassExplorer(ChangeExplorer):
                 self._find_affected_classes(diff_parsed["deleted"], file.content_before)
             )
 
-        return List(class_names)
+        return list(class_names)
 
     def _find_affected_classes(
         self, modified_lines: List[Tuple[int, str]], source: bytes
