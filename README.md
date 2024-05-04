@@ -1,6 +1,6 @@
 # McLocalizer
 
-Tool for finding problematic classes in software repositories.
+Tool for detecting what is notoriously broken in software repository.
 
 ## Install
 Clone the repository:
@@ -18,10 +18,31 @@ pip install .
 
 ## Usage
 
-Run mclocalizer and provide path to repository for analysis.
+For detailed information check the help message.
 
-```sh
-mclocalizer path_to_repository
+```
+usage: mclocalizer [-h] [-t --target {file,java_class,java_file}] [--all-commits] [--include-test-dirs] repo
+
+Tool for detecting what is notoriously broken in software repository. Process fixing commits and identify the changes.
+
+positional arguments:
+  repo                  path to git repository.
+
+options:
+  -h, --help            show this help message and exit
+  -t --target {file,java_class,java_file}
+                        the subject of mclocalizer investigation.
+  --all-commits         force mclocalizer to process all commits in the repository.
+  --include-test-dirs   force mclocalizer to include changes made in test directories.
 ```
 
-mclocalizer will generate `result.csv` in cwd with the collected data.
+## Examples
+### Finding problematic java classes
+
+Run mclocalizer with target set to `java_class` and provide path to repository for analysis.
+
+```sh
+mclocalizer -t java_class path_to_repository
+```
+
+mclocalizer will generate `result.csv` in current working directory with the collected data.
