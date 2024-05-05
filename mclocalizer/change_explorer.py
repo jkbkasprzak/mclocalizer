@@ -44,7 +44,12 @@ class ChangedJavaClassExplorer(ChangeExplorer):
 
     _java_lang = ts.Language(tsjava.language(), "java")
     _query = _java_lang.query(
-        "(class_declaration name: (identifier) @name) @definition.class"
+        """
+        (package_declaration (scoped_identifier) @name)
+        (class_declaration  name: (identifier) @name) @definition.type
+        (interface_declaration name: (identifier) @name) @definition.type
+        (enum_declaration name: (identifier) @name) @definition.type
+        """
     )
 
     def __init__(self):
@@ -85,19 +90,31 @@ class ChangedJavaClassExplorer(ChangeExplorer):
 
     def _find_classes(self, source: bytes) -> List[Tuple[str, int, int]]:
         classes = list()
+        package = ""
         tree = self._parser.parse(source)
         matches = ChangedJavaClassExplorer._query.matches(tree.root_node)
         for match in matches:
-            # check if match first sexp in _query
+            # check if match first package sexp in _query
             if match[0] == 0:
                 captured = match[1]
                 s = captured["name"].range.start_byte
                 e = captured["name"].range.end_byte
-                classes.append(
-                    (
-                        tree.text[s:e].decode(),
-                        captured["definition.class"].start_point[0],
-                        captured["definition.class"].end_point[0],
+                package = tree.text[s:e].decode() + "."
+            else:
+                captured = match[1]
+                s = captured["name"].range.start_byte
+                e = captured["name"].range.end_byte
+                parent = captured["definition.type"].parent
+                # only return top level types
+                if parent.type == "program":
+                    classes.append(
+                        [
+                            tree.text[s:e].decode(),
+                            captured["definition.type"].start_point[0],
+                            captured["definition.type"].end_point[0],
+                        ]
                     )
-                )
+        for i in range(len(classes)):
+            classes[i][0] = package + classes[i][0]
+            classes[i] = tuple(classes[i])
         return classes
