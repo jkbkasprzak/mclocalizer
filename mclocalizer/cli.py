@@ -7,6 +7,7 @@ from mclocalizer.change_explorer import ChangedFileExplorer, ChangedJavaClassExp
 from mclocalizer.commit_filter import FixKeywordCommitFilter
 from mclocalizer.file_filter import JavaFileFilter, NoTestDirFileFilter
 from mclocalizer.mclocalizer import McLocalizer
+from mclocalizer.report import Report
 
 
 def main() -> int:
@@ -51,8 +52,10 @@ def main() -> int:
 
     localizer = McLocalizer(args.repo, commit_filters, file_filters, explorer)
     result_path = "result.csv"
-    with open(result_path, "w", newline="") as result:
-        writer = csv.writer(result, delimiter=",")
+    summary_path = "summary.csv"
+    summary = Report()
+    with open(result_path, "w", newline="") as f:
+        writer = csv.writer(f, delimiter=",")
         writer.writerow(["Commit hash", "Changed targets"])
         with tqdm(
             total=localizer.total_commits(),
@@ -63,6 +66,12 @@ def main() -> int:
         ) as pbar:
             for report in localizer.gen_reports():
                 if report.kind == report.Kind.COMPLETE:
+                    summary.process(report)
                     writer.writerow([report.commit.hash, "; ".join(report.changes)])
                 pbar.update(1)
+    with open(summary_path, "w", newline="") as f:
+        writer = csv.writer(f, delimiter=",")
+        writer.writerow(["Target", "Commit count"])
+        for name, count in summary.gen_stats():
+            writer.writerow([name, count])
     return 0

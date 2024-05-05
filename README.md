@@ -45,4 +45,4 @@ Run mclocalizer with target set to `java_class` and provide path to repository f
 mclocalizer -t java_class path_to_repository
 ```
 
-mclocalizer will generate `result.csv` in current working directory with the collected data.
+mclocalizer will generate `result.csv` and `summary.csv` in current working directory with the collected data.
