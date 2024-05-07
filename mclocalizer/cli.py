@@ -43,7 +43,6 @@ def main() -> int:
     )
     args = parser.parse_args()
     file_filters, explorer = targets[args.target]
-    file_filters = file_filters + [NoNewFileFilter()]
     if not args.include_test_dirs:
         file_filters.append(NoTestDirFileFilter())
     commit_filters = []
