@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Generator, List, Tuple
+from typing import Dict, Generator, List, Set, Tuple
 
 import pydriller as pyd
 
@@ -36,7 +36,8 @@ class CommitReport:
         :type commit: pyd.Commit
         """
         self._commit = commit
-        self._stats = []
+        self._changes = []
+        self._blame = set()
         self._kind = CommitReport.Kind.ERROR
 
     @property
@@ -58,7 +59,14 @@ class CommitReport:
         """
         Targets that were changed by the commit.
         """
-        return self._stats
+        return self._changes
+
+    @property
+    def blame(self) -> Set[str]:
+        """
+        Hashes for commits whose lines have been deleted. Result of SZZ algorithm.
+        """
+        return self._blame
 
 
 class RepoInspector:
@@ -167,17 +175,21 @@ class RepoInspector:
             return
 
         for file in commit.modified_files:
-            self._process_file(file)
-        if len(self.__result._stats) > 0:
+            self._process_file(commit, file)
+        if len(self.__result._changes) > 0:
             self.__result._kind = CommitReport.Kind.COMPLETE
         else:
             self.__result._kind = CommitReport.Kind.EMPTY
 
-    def _process_file(self, file: pyd.ModifiedFile) -> None:
+    def _process_file(self, commit: pyd.Commit, file: pyd.ModifiedFile) -> None:
         if not self._filter_file(file):
             return
-
-        self.__result._stats = self.__result._stats + self._explorer.find_modified(file)
+        blame = self._git_repo.get_commits_last_modified_lines(commit, file)
+        for hashes in blame.values():
+            self.__result._blame.update(hashes)
+        self.__result._changes = self.__result._changes + self._explorer.find_modified(
+            file
+        )
 
 
 class TargetTracker:

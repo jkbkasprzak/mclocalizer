@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from mclocalizer.commit_filter import FixKeywordCommitFilter
 from mclocalizer.explorer import FileExplorer, JavaClassExplorer
-from mclocalizer.file_filter import JavaFileFilter, NoNewFileFilter, NoTestDirFileFilter
+from mclocalizer.file_filter import JavaFileFilter, NoTestDirFileFilter
 from mclocalizer.inspection import RepoInspector, TargetTracker
 
 
@@ -55,7 +55,7 @@ def main() -> int:
     tracker = TargetTracker()
     with open(result_path, "w", newline="") as f:
         writer = csv.writer(f, delimiter=",")
-        writer.writerow(["Commit hash", "Changed targets"])
+        writer.writerow(["Commit hash", "Changed targets", "Blame"])
         with tqdm(
             total=localizer.total_commits(),
             dynamic_ncols=True,
@@ -66,7 +66,13 @@ def main() -> int:
             for report in localizer.gen_reports():
                 if report.kind == report.Kind.COMPLETE:
                     tracker.collect(report)
-                    writer.writerow([report.commit.hash, "; ".join(report.changes)])
+                    writer.writerow(
+                        [
+                            report.commit.hash,
+                            "; ".join(report.changes),
+                            "; ".join(report.blame),
+                        ]
+                    )
                 pbar.update(1)
     with open(summary_path, "w", newline="") as f:
         writer = csv.writer(f, delimiter=",")
