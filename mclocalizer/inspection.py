@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Generator, List
+from typing import Dict, Generator, List, Tuple
 
 import pydriller as pyd
 
@@ -36,7 +36,7 @@ class CommitReport:
         :type commit: pyd.Commit
         """
         self._commit = commit
-        self._changes = []
+        self._stats = []
         self._kind = CommitReport.Kind.ERROR
 
     @property
@@ -58,12 +58,15 @@ class CommitReport:
         """
         Targets that were changed by the commit.
         """
-        return self._changes
+        return self._stats
 
 
-class McLocalizer:
+class RepoInspector:
     """
-    Responsible for localizing problematic targets in software repository.
+    Responsible for processing commits and generating reports.
+
+    For commits that pass provided commit_filters obtain a list of modified files.
+    For files that pass provided file_filters identify changed targets with provided target explorer.
     """
 
     def __init__(
@@ -73,6 +76,18 @@ class McLocalizer:
         file_filters: List[FileFilter],
         explorer: TargetExplorer,
     ):
+        """
+        Create new repository analyzer.
+
+        :param repo_path: path to git repository to investigate
+        :type repo_path: str
+        :param commit_filters: filters for processing only relevant commits
+        :type commit_filters: List[CommitFilter]
+        :param file_filters: filters for processing only relevant files.
+        :type file_filters: List[FileFilter]
+        :param explorer: explorer responsible for identyfying what targets were changed.
+        :type explorer: TargetExplorer
+        """
         self._git_repo = pyd.Git(repo_path)
         self._commit_filters = commit_filters
         self._file_filters = file_filters
@@ -153,7 +168,7 @@ class McLocalizer:
 
         for file in commit.modified_files:
             self._process_file(file)
-        if len(self.__result._changes) > 0:
+        if len(self.__result._stats) > 0:
             self.__result._kind = CommitReport.Kind.COMPLETE
         else:
             self.__result._kind = CommitReport.Kind.EMPTY
@@ -162,6 +177,46 @@ class McLocalizer:
         if not self._filter_file(file):
             return
 
-        self.__result._changes = self.__result._changes + self._explorer.find_modified(
-            file
+        self.__result._stats = self.__result._stats + self._explorer.find_modified(file)
+
+
+class TargetTracker:
+    """
+    Responsible for collecting target statistics from commit reports.
+    """
+
+    def __init__(self):
+        """
+        Create new target tracker.
+        """
+        self._stats = dict()
+
+    @property
+    def stats(self) -> Dict[str, int]:
+        """
+        Dictionary with target identifier and fix count.
+        """
+        return self._stats
+
+    def collect(self, commit_report: CommitReport) -> None:
+        """
+        Update statistics with data from commit report.
+
+        :param commit_report: report to collect data from
+        :type commit_report: CommitReport
+        """
+        for symbol in commit_report.changes:
+            self._stats[symbol] = self._stats.get(symbol, 0) + 1
+
+    def gen_stats(self) -> List[Tuple[str, int]]:
+        """
+        Get ordered list of most fixed targets.
+
+        :returns: List of (target, fix_count) tuples, ordered by fix_count in descending order.
+        :rtype: List[Tuple[str, int]]
+        """
+        return sorted(
+            ((name, count) for name, count in self._stats.items()),
+            key=lambda e: e[1],
+            reverse=True,
         )

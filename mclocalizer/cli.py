@@ -6,8 +6,7 @@ from tqdm import tqdm
 from mclocalizer.commit_filter import FixKeywordCommitFilter
 from mclocalizer.explorer import FileExplorer, JavaClassExplorer
 from mclocalizer.file_filter import JavaFileFilter, NoNewFileFilter, NoTestDirFileFilter
-from mclocalizer.mclocalizer import McLocalizer
-from mclocalizer.report import Report
+from mclocalizer.inspection import RepoInspector, TargetTracker
 
 
 def main() -> int:
@@ -51,10 +50,10 @@ def main() -> int:
     if not args.all_commits:
         commit_filters.append(FixKeywordCommitFilter())
 
-    localizer = McLocalizer(args.repo, commit_filters, file_filters, explorer)
+    localizer = RepoInspector(args.repo, commit_filters, file_filters, explorer)
     result_path = "result.csv"
     summary_path = "summary.csv"
-    summary = Report()
+    tracker = TargetTracker()
     with open(result_path, "w", newline="") as f:
         writer = csv.writer(f, delimiter=",")
         writer.writerow(["Commit hash", "Changed targets"])
@@ -67,12 +66,12 @@ def main() -> int:
         ) as pbar:
             for report in localizer.gen_reports():
                 if report.kind == report.Kind.COMPLETE:
-                    summary.process(report)
+                    tracker.collect(report)
                     writer.writerow([report.commit.hash, "; ".join(report.changes)])
                 pbar.update(1)
     with open(summary_path, "w", newline="") as f:
         writer = csv.writer(f, delimiter=",")
         writer.writerow(["Target", "Commit count"])
-        for name, count in summary.gen_stats():
+        for name, count in tracker.gen_stats():
             writer.writerow([name, count])
     return 0
