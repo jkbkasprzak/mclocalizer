@@ -6,12 +6,12 @@ import tree_sitter as ts
 import tree_sitter_java as tsjava
 
 
-class ChangeExplorer(abc.ABC):
-    """Abstract class for finding scope of the changes made by the commit."""
+class TargetExplorer(abc.ABC):
+    """Abstract class for finding targets in the repository."""
 
     @abc.abstractmethod
-    def find_scope(self, file: pyd.ModifiedFile) -> List[str]:
-        """Find what targets were affected by the changes.
+    def find_modified(self, file: pyd.ModifiedFile) -> List[str]:
+        """Find what targets were modified.
 
         :param file: file that has been modified by the commit
         :type file: pyd.ModifiedFile
@@ -21,15 +21,15 @@ class ChangeExplorer(abc.ABC):
         pass
 
 
-class ChangedFileExplorer(ChangeExplorer):
-    """Explorer that finds what files have been modified by the commit"""
+class FileExplorer(TargetExplorer):
+    """Explorer that finds file targets."""
 
-    def find_scope(self, file: pyd.ModifiedFile) -> List[str]:
-        """Find the path of modified file.
+    def find_modified(self, file: pyd.ModifiedFile) -> List[str]:
+        """Find the paths of modified files.
 
         :param file: file that has been modified by the commit
         :type file: pyd.ModifiedFile
-        :returns: filename of modified file
+        :returns: paths of modified files
         :rtype: List[str]
         """
         paths = set()
@@ -39,8 +39,8 @@ class ChangedFileExplorer(ChangeExplorer):
         return list(paths)
 
 
-class ChangedJavaClassExplorer(ChangeExplorer):
-    """Explorer that finds what java classes have been modified by the commit"""
+class JavaClassExplorer(TargetExplorer):
+    """Explorer that finds java top level class targets."""
 
     _java_lang = ts.Language(tsjava.language(), "java")
     _query = _java_lang.query(
@@ -54,14 +54,15 @@ class ChangedJavaClassExplorer(ChangeExplorer):
 
     def __init__(self):
         self._parser = ts.Parser()
-        self._parser.set_language(ChangedJavaClassExplorer._java_lang)
+        self._parser.set_language(JavaClassExplorer._java_lang)
 
-    def find_scope(self, file: pyd.ModifiedFile) -> List[str]:
-        """Find the names of affected classes in modified file.
+    def find_modified(self, file: pyd.ModifiedFile) -> List[str]:
+        """Find full names (with package) of modified java top level classes.
+        Expects file content to be java source code.
 
-        :param file: file that has been modified by the commit
+        :param file: java source file that has been modified by the commit
         :type file: pyd.ModifiedFile
-        :returns: name of all the classes that have been modified
+        :returns: names of all the classes that have been modified
         :rtype: List[str]
         """
         class_names = set()
@@ -81,18 +82,25 @@ class ChangedJavaClassExplorer(ChangeExplorer):
         self, modified_lines: List[Tuple[int, str]], source: bytes
     ) -> Set[str]:
         names = set()
-        classes = self._find_classes(source)
+        classes = self.explore_source(source)
         for changed_line, _ in modified_lines:
             for class_name, class_start, class_end in classes:
                 if class_start <= changed_line and changed_line <= class_end:
                     names.add(class_name)
         return names
 
-    def _find_classes(self, source: bytes) -> List[Tuple[str, int, int]]:
+    def explore_source(self, source: bytes) -> List[Tuple[str, int, int]]:
+        """Find java top level classes in source code.
+
+        :param source: java source code
+        :type source: bytes
+        :returns: List of (class_name, class_start_line, class_end_line) tuples
+        :rtype: List[Tuple[str, int, int]]
+        """
         classes = list()
         package = ""
         tree = self._parser.parse(source)
-        matches = ChangedJavaClassExplorer._query.matches(tree.root_node)
+        matches = JavaClassExplorer._query.matches(tree.root_node)
         for match in matches:
             # check if match first package sexp in _query
             if match[0] == 0:

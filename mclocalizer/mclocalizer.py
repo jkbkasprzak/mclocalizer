@@ -3,8 +3,8 @@ from typing import Generator, List
 
 import pydriller as pyd
 
-from mclocalizer.change_explorer import ChangeExplorer
 from mclocalizer.commit_filter import CommitFilter
+from mclocalizer.explorer import TargetExplorer
 from mclocalizer.file_filter import FileFilter
 
 
@@ -71,7 +71,7 @@ class McLocalizer:
         repo_path: str,
         commit_filters: List[CommitFilter],
         file_filters: List[FileFilter],
-        explorer: ChangeExplorer,
+        explorer: TargetExplorer,
     ):
         self._git_repo = pyd.Git(repo_path)
         self._commit_filters = commit_filters
@@ -112,14 +112,14 @@ class McLocalizer:
         self._file_filters = value
 
     @property
-    def explorer(self) -> ChangeExplorer:
+    def explorer(self) -> TargetExplorer:
         """
         Explorer responsible for identyfying what targets were changed.
         """
         return self._explorer
 
     @explorer.setter
-    def explorer(self, value: ChangeExplorer):
+    def explorer(self, value: TargetExplorer):
         self._explorer = value
 
     def total_commits(self) -> int:
@@ -162,6 +162,6 @@ class McLocalizer:
         if not self._filter_file(file):
             return
 
-        self.__result._changes = self.__result._changes + self._explorer.find_scope(
+        self.__result._changes = self.__result._changes + self._explorer.find_modified(
             file
         )

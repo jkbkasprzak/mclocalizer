@@ -3,8 +3,8 @@ import csv
 
 from tqdm import tqdm
 
-from mclocalizer.change_explorer import ChangedFileExplorer, ChangedJavaClassExplorer
 from mclocalizer.commit_filter import FixKeywordCommitFilter
+from mclocalizer.explorer import FileExplorer, JavaClassExplorer
 from mclocalizer.file_filter import JavaFileFilter, NoNewFileFilter, NoTestDirFileFilter
 from mclocalizer.mclocalizer import McLocalizer
 from mclocalizer.report import Report
@@ -12,9 +12,9 @@ from mclocalizer.report import Report
 
 def main() -> int:
     targets = dict()
-    targets["file"] = ([], ChangedFileExplorer())
-    targets["java_class"] = ([JavaFileFilter()], ChangedJavaClassExplorer())
-    targets["java_file"] = ([JavaFileFilter()], ChangedFileExplorer())
+    targets["file"] = ([], FileExplorer())
+    targets["java_class"] = ([JavaFileFilter()], JavaClassExplorer())
+    targets["java_file"] = ([JavaFileFilter()], FileExplorer())
 
     parser = argparse.ArgumentParser(
         prog="mclocalizer",
