@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from mclocalizer.change_explorer import ChangedFileExplorer, ChangedJavaClassExplorer
 from mclocalizer.commit_filter import FixKeywordCommitFilter
-from mclocalizer.file_filter import JavaFileFilter, NoTestDirFileFilter
+from mclocalizer.file_filter import JavaFileFilter, NoNewFileFilter, NoTestDirFileFilter
 from mclocalizer.mclocalizer import McLocalizer
 from mclocalizer.report import Report
 
@@ -44,6 +44,7 @@ def main() -> int:
     )
     args = parser.parse_args()
     file_filters, explorer = targets[args.target]
+    file_filters = file_filters + [NoNewFileFilter()]
     if not args.include_test_dirs:
         file_filters.append(NoTestDirFileFilter())
     commit_filters = []

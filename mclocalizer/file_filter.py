@@ -47,3 +47,17 @@ class NoTestDirFileFilter(FileFilter):
                 )
 
         return not test_dir
+
+
+class NoNewFileFilter(FileFilter):
+    """Filter that returns True only for files that already existed in repository prior to commit."""
+
+    def filter(self, file: pyd.ModifiedFile) -> bool:
+        return file.old_path is not None
+
+
+class NoDeletedFileFilter(FileFilter):
+    """Filter that returns True only for files that continue to exist in repository after the commit."""
+
+    def filter(self, file: pyd.ModifiedFile) -> bool:
+        return file.new_path is not None
