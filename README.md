@@ -22,7 +22,7 @@ For detailed information check the help message.
 
 ```
 usage: mclocalizer [-h] [-t --target {file,java_class,java_file}]
-[--all-commits] [--include-test-dirs] repo
+[--include-test-dirs] repo
 
 Tool for detecting what is notoriously broken in software repository.
 Process fixing commits and identify the changes.
