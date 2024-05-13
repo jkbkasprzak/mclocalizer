@@ -21,9 +21,11 @@ pip install .
 For detailed information check the help message.
 
 ```
-usage: mclocalizer [-h] [-t --target {file,java_class,java_file}] [--all-commits] [--include-test-dirs] repo
+usage: mclocalizer [-h] [-t --target {file,java_class,java_file}]
+[--all-commits] [--include-test-dirs] repo
 
-Tool for detecting what is notoriously broken in software repository. Process fixing commits and identify the changes.
+Tool for detecting what is notoriously broken in software repository.
+Process fixing commits and identify the changes.
 
 positional arguments:
   repo                  path to git repository.
@@ -32,7 +34,6 @@ options:
   -h, --help            show this help message and exit
   -t --target {file,java_class,java_file}
                         the subject of mclocalizer investigation.
-  --all-commits         force mclocalizer to process all commits in the repository.
   --include-test-dirs   force mclocalizer to include changes made in test directories.
 ```
 

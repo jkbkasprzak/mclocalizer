@@ -32,11 +32,6 @@ def main() -> int:
         default="file",
     )
     parser.add_argument(
-        "--all-commits",
-        action="store_true",
-        help="force mclocalizer to process all commits in the repository.",
-    )
-    parser.add_argument(
         "--include-test-dirs",
         action="store_true",
         help="force mclocalizer to include changes made in test directories.",
@@ -45,9 +40,7 @@ def main() -> int:
     file_filters, explorer = targets[args.target]
     if not args.include_test_dirs:
         file_filters.append(NoTestDirFileFilter())
-    commit_filters = []
-    if not args.all_commits:
-        commit_filters.append(FixKeywordCommitFilter())
+    commit_filters = [FixKeywordCommitFilter()]
 
     localizer = RepoInspector(args.repo, commit_filters, file_filters, explorer)
     result_path = "result.csv"
