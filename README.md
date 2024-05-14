@@ -43,19 +43,21 @@ options:
 ```
 
 ## Examples
-For all examples below mclocalizer will generate `out.csv` and `out_stat.csv` in current working directory with the collected data.
+
+For all examples below McLocalizer will generate `out.csv` and `out_stat.csv` in current working directory with the collected data.
+
 ### Finding problematic java classes
 
 For each fixing commit McLocalizer will identify changed java classes.
 
 ```sh
-mclocalizer path_to_repository -t java_class -f -o out.csv
+mclocalizer path_to_repository -t java_class -o out.csv
 ```
 
 ### Finding problematic java classes with blame info
 
-For each fixing commit McLocalizer will identify changed java classes and run SZZ algorithm to find bug introducing commit.
+For each fixing commit McLocalizer will identify changed java classes and run SZZ algorithm to find bug introducing commits.
 
 ```sh
-mclocalizer path_to_repository -t java_class --blame -f -o out.csv
+mclocalizer path_to_repository -t java_class --blame -o out.csv
 ```
