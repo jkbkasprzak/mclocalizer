@@ -1,5 +1,6 @@
 import argparse
 import csv
+from pathlib import Path
 
 from tqdm import tqdm
 
@@ -21,9 +22,16 @@ def main() -> int:
         description="""
         Tool for detecting what is notoriously broken in software repository.
         Process fixing commits and identify modified targets.
+        Generate report and target statistics in csv format.
         """,
     )
     parser.add_argument("repo", type=str, help="path to git repository.")
+    parser.add_argument(
+        "-o", "--out", required=True, type=str, help="output report file."
+    )
+    parser.add_argument(
+        "-f", "--force", action="store_true", help="overrides existing output files."
+    )
     parser.add_argument(
         "-t",
         "--target",
@@ -58,10 +66,14 @@ def main() -> int:
     add_blame = args.blame or args.oldest_blame
 
     localizer = RepoInspector(args.repo, commit_filters, file_filters, explorer)
-    result_path = "result.csv"
-    summary_path = "summary.csv"
+
+    result_path = Path(args.out)
+    stat_path = result_path.with_stem(result_path.stem + "_stat")
+    result_path.touch(exist_ok=args.force)
+    stat_path.touch(exist_ok=args.force)
+
     tracker = TargetTracker()
-    with open(result_path, "w", newline="") as f:
+    with result_path.open("w", newline="") as f:
         writer = csv.writer(f, delimiter=",")
         row = ["Commit hash", "Changed targets"]
         if add_blame:
@@ -85,7 +97,7 @@ def main() -> int:
                         row.append(blame_ext.process(report))
                     writer.writerow(row)
                 pbar.update(1)
-    with open(summary_path, "w", newline="") as f:
+    with stat_path.open("w", newline="") as f:
         writer = csv.writer(f, delimiter=",")
         writer.writerow(["Target", "Commit count"])
         for name, count in tracker.gen_stats():
