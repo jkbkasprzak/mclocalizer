@@ -28,7 +28,7 @@ jobs:
       - name: Check flake8
         uses: py-actions/flake8@v2
         with:
-          update-pip: "true"
+          args: "-v"
       - name: Check black
         uses: psf/black@stable
         with:
