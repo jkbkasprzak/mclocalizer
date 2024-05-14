@@ -19,21 +19,24 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - name: flake8 check
+      - name: Upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+      - name: Install package and dependencies
+        run: |
+          python -m pip install .[dev]
+      - name: Check flake8
         uses: py-actions/flake8@v2
         with:
           update-pip: "true"
-      - name: black check
+      - name: Check black
         uses: psf/black@stable
         with:
           options: "--check --verbose"
           src: "."
           use_pyproject: true
-      - name: isort check
+      - name: Check isort
         uses: isort/isort-action@master
         with:
             requirementsFiles: "requirements.txt requirements-dev.txt"
-      - name: install package
-        run: |
-          python -m pip install .
           
