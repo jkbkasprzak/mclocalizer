@@ -1,23 +1,9 @@
-import abc
 import re
 from typing import Optional
 
 import pydriller as pyd
 
-
-class FileFilter(abc.ABC):
-    """Abstract class for filtering out files."""
-
-    @abc.abstractmethod
-    def filter(self, file: pyd.ModifiedFile) -> bool:
-        """Checks whether the file passes.
-
-        :param file: file to be checked
-        :type file: pyd.Commit
-        :returns: boolean, whether the file has passed the filter
-        :rtype: bool
-        """
-        pass
+from mclocalizer.base import FileFilter
 
 
 class JavaFileFilter(FileFilter):

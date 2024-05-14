@@ -1,26 +1,6 @@
-import abc
 from dataclasses import dataclass
 
-
-@dataclass
-class Target(abc.ABC):
-    """Abstract class that represents target in specific commit.
-
-    Target is an entity that exists in the repository and can contain bugs (for example file or class).
-    """
-
-    def __str__(self) -> str:
-        return self.get_identifier()
-
-    @abc.abstractmethod
-    def get_identifier(self) -> str:
-        """Get target unique identifier.
-        If two targets have same identifier within a single commit they are considered the same target.
-
-        :returns: string that identifies the target.
-        :rtype: str
-        """
-        pass
+from mclocalizer.base import Target
 
 
 @dataclass

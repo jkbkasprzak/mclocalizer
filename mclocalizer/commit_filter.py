@@ -1,22 +1,8 @@
-import abc
 import re
 
 import pydriller as pyd
 
-
-class CommitFilter(abc.ABC):
-    """Abstract class for filtering out commits."""
-
-    @abc.abstractmethod
-    def filter(self, commit: pyd.Commit) -> bool:
-        """Checks whether the commit passes.
-
-        :param commit: commit to be checked
-        :type commit: pyd.Commit
-        :returns: boolean, whether the commit has passed the filter
-        :rtype: bool
-        """
-        pass
+from mclocalizer.base import CommitFilter
 
 
 class FixKeywordCommitFilter(CommitFilter):

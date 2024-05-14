@@ -4,10 +4,7 @@ from typing import Dict, Generator, List, Tuple
 
 import pydriller as pyd
 
-from mclocalizer.commit_filter import CommitFilter
-from mclocalizer.explorer import TargetExplorer
-from mclocalizer.file_filter import FileFilter
-from mclocalizer.target import Target
+from mclocalizer.base import CommitFilter, FileFilter, Target, TargetExplorer
 
 
 @dataclass

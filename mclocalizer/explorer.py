@@ -1,4 +1,3 @@
-import abc
 from typing import List, Tuple
 
 import pydriller as pyd
@@ -6,35 +5,7 @@ import tree_sitter as ts
 import tree_sitter_java as tsjava
 
 import mclocalizer.target as mctarget
-
-
-class TargetExplorer(abc.ABC):
-    """Abstract class for finding modified targets."""
-
-    def __init__(self):
-        self._collected_targets = dict()
-
-    @property
-    def collected_targets(self) -> Tuple[mctarget.Target]:
-        return tuple(self._collected_targets.values())
-
-    def _add_target(self, target: mctarget.Target):
-        """Add target to the list of already collected targets."""
-        self._collected_targets[target.get_identifier()] = target
-
-    def reset(self) -> None:
-        """Reset already collected targets."""
-        self._collected_targets = dict()
-
-    @abc.abstractmethod
-    def find_modified(self, file: pyd.ModifiedFile) -> None:
-        """Find what targets were modified in specific file.
-        Updates collected targets property.
-
-        :param file: file that has been modified by the commit
-        :type file: pyd.ModifiedFile
-        """
-        pass
+from mclocalizer.base import TargetExplorer
 
 
 class FileExplorer(TargetExplorer):
