@@ -20,7 +20,7 @@ def main() -> int:
         prog="mclocalizer",
         description="""
         Tool for detecting what is notoriously broken in software repository.
-        Process fixing commits and identify the changes.
+        Process fixing commits and identify modified targets.
         """,
     )
     parser.add_argument("repo", type=str, help="path to git repository.")
@@ -37,20 +37,36 @@ def main() -> int:
         action="store_true",
         help="force mclocalizer to include changes made in test directories.",
     )
+    parser.add_argument(
+        "--blame",
+        action="store_true",
+        help=" add list of blame commits to the report.",
+    )
+    parser.add_argument(
+        "--oldest-blame",
+        action="store_true",
+        help="add oldest blame commit to the report.",
+    )
+
     args = parser.parse_args()
     file_filters, explorer = targets[args.target]
     if not args.include_test_dirs:
         file_filters.append(NoTestDirFileFilter())
     commit_filters = [FixKeywordCommitFilter()]
 
+    blame_ext = BlameExtension(args.repo, file_filters, args.oldest_blame)
+    add_blame = args.blame or args.oldest_blame
+
     localizer = RepoInspector(args.repo, commit_filters, file_filters, explorer)
     result_path = "result.csv"
     summary_path = "summary.csv"
     tracker = TargetTracker()
-    blame_gen = BlameExtension(args.repo, file_filters, False)
     with open(result_path, "w", newline="") as f:
         writer = csv.writer(f, delimiter=",")
-        writer.writerow(["Commit hash", "Changed targets", "Blame"])
+        row = ["Commit hash", "Changed targets"]
+        if add_blame:
+            row.append("Blame")
+        writer.writerow(row)
         with tqdm(
             total=localizer.total_commits(),
             dynamic_ncols=True,
@@ -61,13 +77,13 @@ def main() -> int:
             for report in localizer.gen_reports():
                 if report.kind == report.Kind.COMPLETE:
                     tracker.collect(report)
-                    writer.writerow(
-                        [
-                            report.commit.hash,
-                            "; ".join(str(t) for t in report.targets),
-                            blame_gen.process(report),
-                        ]
-                    )
+                    row = [
+                        report.commit.hash,
+                        "; ".join(str(t) for t in report.targets),
+                    ]
+                    if add_blame:
+                        row.append(blame_ext.process(report))
+                    writer.writerow(row)
                 pbar.update(1)
     with open(summary_path, "w", newline="") as f:
         writer = csv.writer(f, delimiter=",")
