@@ -62,8 +62,8 @@ def main() -> int:
                     writer.writerow(
                         [
                             report.commit.hash,
-                            "; ".join(report.changes),
-                            "; ".join(report.blame),
+                            "; ".join(str(t) for t in report.targets),
+                            "; ".join(report.extra["szz"]),
                         ]
                     )
                 pbar.update(1)

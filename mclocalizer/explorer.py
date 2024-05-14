@@ -1,22 +1,38 @@
 import abc
-from typing import List, Set, Tuple
+from typing import List, Tuple
 
 import pydriller as pyd
 import tree_sitter as ts
 import tree_sitter_java as tsjava
 
+import mclocalizer.target as mctarget
+
 
 class TargetExplorer(abc.ABC):
-    """Abstract class for finding targets in the repository."""
+    """Abstract class for finding modified targets."""
+
+    def __init__(self):
+        self._collected_targets = dict()
+
+    @property
+    def collected_targets(self) -> Tuple[mctarget.Target]:
+        return tuple(self._collected_targets.values())
+
+    def _add_target(self, target: mctarget.Target):
+        """Add target to the list of already collected targets."""
+        self._collected_targets[target.get_identifier()] = target
+
+    def reset(self) -> None:
+        """Reset already collected targets."""
+        self._collected_targets = dict()
 
     @abc.abstractmethod
-    def find_modified(self, file: pyd.ModifiedFile) -> List[str]:
-        """Find what targets were modified.
+    def find_modified(self, file: pyd.ModifiedFile) -> None:
+        """Find what targets were modified in specific file.
+        Updates collected targets property.
 
         :param file: file that has been modified by the commit
         :type file: pyd.ModifiedFile
-        :returns: list of identifiers that have been affected by the change
-        :rtype: List[str]
         """
         pass
 
@@ -24,19 +40,10 @@ class TargetExplorer(abc.ABC):
 class FileExplorer(TargetExplorer):
     """Explorer that finds file targets."""
 
-    def find_modified(self, file: pyd.ModifiedFile) -> List[str]:
-        """Find the paths of modified files.
-
-        :param file: file that has been modified by the commit
-        :type file: pyd.ModifiedFile
-        :returns: paths of modified files
-        :rtype: List[str]
-        """
-        paths = set()
+    def find_modified(self, file: pyd.ModifiedFile) -> None:
         for path in (file.new_path, file.old_path):
             if path is not None:
-                paths.add(path)
-        return list(paths)
+                self._add_target(mctarget.FileTarget(path))
 
 
 class JavaClassExplorer(TargetExplorer):
@@ -56,46 +63,32 @@ class JavaClassExplorer(TargetExplorer):
         self._parser = ts.Parser()
         self._parser.set_language(JavaClassExplorer._java_lang)
 
-    def find_modified(self, file: pyd.ModifiedFile) -> List[str]:
-        """Find full names (with package) of modified java top level classes.
-        Expects file content to be java source code.
-
-        :param file: java source file that has been modified by the commit
-        :type file: pyd.ModifiedFile
-        :returns: names of all the classes that have been modified
-        :rtype: List[str]
-        """
-        class_names = set()
+    def find_modified(self, file: pyd.ModifiedFile) -> None:
         diff_parsed = file.diff_parsed
         if len(diff_parsed["added"]) > 0:
-            class_names.update(
-                self._find_affected_classes(diff_parsed["added"], file.content)
-            )
+            self._find_affected_classes(diff_parsed["added"], file.content)
         if len(diff_parsed["deleted"]) > 0:
-            class_names.update(
-                self._find_affected_classes(diff_parsed["deleted"], file.content_before)
-            )
-
-        return list(class_names)
+            self._find_affected_classes(diff_parsed["deleted"], file.content_before)
 
     def _find_affected_classes(
         self, modified_lines: List[Tuple[int, str]], source: bytes
-    ) -> Set[str]:
-        names = set()
+    ) -> None:
         classes = self.explore_source(source)
         for changed_line, _ in modified_lines:
-            for class_name, class_start, class_end in classes:
+            for java_class, class_start, class_end in classes:
+                # TODO: Verify if this check is correct (consistent indexing)
                 if class_start <= changed_line and changed_line <= class_end:
-                    names.add(class_name)
-        return names
+                    self._add_target(java_class)
 
-    def explore_source(self, source: bytes) -> List[Tuple[str, int, int]]:
+    def explore_source(
+        self, source: bytes
+    ) -> List[Tuple[mctarget.JavaClassTarget, int, int]]:
         """Find java top level classes in source code.
 
         :param source: java source code
         :type source: bytes
-        :returns: List of (class_name, class_start_line, class_end_line) tuples
-        :rtype: List[Tuple[str, int, int]]
+        :returns: List of (java_class, class_start_line, class_end_line) tuples
+        :rtype: List[Tuple[JavaClassTarget, int, int]]
         """
         classes = list()
         package = ""
@@ -107,7 +100,7 @@ class JavaClassExplorer(TargetExplorer):
                 captured = match[1]
                 s = captured["name"].range.start_byte
                 e = captured["name"].range.end_byte
-                package = tree.text[s:e].decode() + "."
+                package = tree.text[s:e].decode()
             else:
                 captured = match[1]
                 s = captured["name"].range.start_byte
@@ -123,6 +116,6 @@ class JavaClassExplorer(TargetExplorer):
                         ]
                     )
         for i in range(len(classes)):
-            classes[i][0] = package + classes[i][0]
+            classes[i][0] = mctarget.JavaClassTarget(package, classes[i][0])
             classes[i] = tuple(classes[i])
         return classes
