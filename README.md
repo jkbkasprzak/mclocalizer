@@ -21,29 +21,41 @@ pip install .
 For detailed information check the help message.
 
 ```
-usage: mclocalizer [-h] [-t --target {file,java_class,java_file}]
-[--include-test-dirs] repo
+usage: mclocalizer [-h] -o OUT [-f] [-t {file,java_class,java_file}] 
+[--include-test-dirs] [--blame] [--oldest-blame] repo
 
 Tool for detecting what is notoriously broken in software repository.
-Process fixing commits and identify the changes.
+Process fixing commits and identify modified targets.
+Generate report and target statistics in csv format.
 
 positional arguments:
   repo                  path to git repository.
 
 options:
   -h, --help            show this help message and exit
-  -t --target {file,java_class,java_file}
+  -o OUT, --out OUT     output report file.
+  -f, --force           overrides existing output files.
+  -t {file,java_class,java_file}, --target {file,java_class,java_file}
                         the subject of mclocalizer investigation.
   --include-test-dirs   force mclocalizer to include changes made in test directories.
+  --blame               add list of blame commits to the report.
+  --oldest-blame        add oldest blame commit to the report.
 ```
 
 ## Examples
+For all examples below mclocalizer will generate `out.csv` and `out_stat.csv` in current working directory with the collected data.
 ### Finding problematic java classes
 
-Run mclocalizer with target set to `java_class` and provide path to repository for analysis.
+For each fixing commit McLocalizer will identify changed java classes.
 
 ```sh
-mclocalizer -t java_class path_to_repository
+mclocalizer path_to_repository -t java_class -f -o out.csv
 ```
 
-mclocalizer will generate `result.csv` and `summary.csv` in current working directory with the collected data.
+### Finding problematic java classes with blame info
+
+For each fixing commit McLocalizer will identify changed java classes and run SZZ algorithm to find bug introducing commit.
+
+```sh
+mclocalizer path_to_repository -t java_class --blame -f -o out.csv
+```
