@@ -1,6 +1,7 @@
 import abc
-from dataclasses import dataclass
-from typing import Tuple
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Dict, Tuple
 
 import pydriller as pyd
 
@@ -64,6 +65,7 @@ class TargetExplorer(abc.ABC):
 
     @property
     def collected_targets(self) -> Tuple[Target]:
+        """Targets that has been modified."""
         return tuple(self._collected_targets.values())
 
     def _add_target(self, target: Target):
@@ -83,3 +85,34 @@ class TargetExplorer(abc.ABC):
         :type file: pyd.ModifiedFile
         """
         pass
+
+
+@dataclass
+class CommitReport:
+    """
+    Result of commit analysis.
+    """
+
+    class Kind(Enum):
+        """Describes kind of generated commit report."""
+
+        ERROR = 0
+        """Error has occured and report is incorrect."""
+
+        FILTERED = 1
+        """Commit was filtered out and was not processed."""
+
+        EMPTY = 2
+        """Commit was processed but changed targets were not identified."""
+
+        COMPLETE = 3
+        """Commit was processed and changed targets were successfully identified."""
+
+    commit: pyd.Commit
+    "Commit under investigation"
+    kind: Kind
+    "Report kind"
+    targets: Tuple[Target] = tuple()
+    "Targets that were changed by the commit"
+    extra: Dict[str, any] = field(default_factory=dict)
+    "Extra information regarding commit"

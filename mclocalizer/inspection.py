@@ -1,41 +1,8 @@
-from dataclasses import dataclass, field
-from enum import Enum
 from typing import Dict, Generator, List, Tuple
 
 import pydriller as pyd
 
-from mclocalizer.base import CommitFilter, FileFilter, Target, TargetExplorer
-
-
-@dataclass
-class CommitReport:
-    """
-    Result of commit analysis.
-    """
-
-    class Kind(Enum):
-        """Describes kind of generated commit report."""
-
-        ERROR = 0
-        """Error has occured and report is incorrect."""
-
-        FILTERED = 1
-        """Commit was filtered out and was not processed."""
-
-        EMPTY = 2
-        """Commit was processed but changed targets were not identified."""
-
-        COMPLETE = 3
-        """Commit was processed and changed targets were successfully identified."""
-
-    commit: pyd.Commit
-    "Commit under investigation"
-    kind: Kind
-    "Report kind"
-    targets: Tuple[Target] = tuple()
-    "Targets that were changed by the commit"
-    extra: Dict[str, any] = field(default_factory=dict)
-    "Extra information regarding commit"
+from mclocalizer.base import CommitFilter, CommitReport, FileFilter, TargetExplorer
 
 
 class RepoInspector:
