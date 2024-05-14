@@ -7,15 +7,15 @@ packages = ["mclocalizer"]
 
 [project]
 name = "mclocalizer"
-version = "0.0.1"
+version = "1.0.0-alpha"
 authors = [
     {name="Jakub Kasprzak"},
 ]
-description = "Tool for finding problematic classes in software repositories."
+description = "Tool for detecting what is notoriously broken in software repository."
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
