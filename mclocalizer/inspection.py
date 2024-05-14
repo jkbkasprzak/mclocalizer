@@ -101,21 +101,16 @@ class RepoInspector:
         if not all(filter.filter(commit) for filter in self._commit_filters):
             return CommitReport(commit, CommitReport.Kind.FILTERED)
 
-        extra = dict()
-        extra["szz"] = set()
         self.explorer.reset()
         for file in commit.modified_files:
             if all(filter.filter(file) for filter in (self._file_filters)):
                 self.explorer.find_modified(file)
-                blame = self._git_repo.get_commits_last_modified_lines(commit, file)
-                for hashes in blame.values():
-                    extra["szz"].update(hashes)
         targets = self.explorer.collected_targets
 
         if len(targets) > 0:
-            return CommitReport(commit, CommitReport.Kind.COMPLETE, targets, extra)
+            return CommitReport(commit, CommitReport.Kind.COMPLETE, targets)
         else:
-            return CommitReport(commit, CommitReport.Kind.EMPTY, targets, extra)
+            return CommitReport(commit, CommitReport.Kind.EMPTY, targets)
 
 
 class TargetTracker:

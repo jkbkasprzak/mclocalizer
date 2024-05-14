@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 from mclocalizer.commit_filter import FixKeywordCommitFilter
 from mclocalizer.explorer import FileExplorer, JavaClassExplorer
+from mclocalizer.extension import BlameExtension
 from mclocalizer.file_filter import JavaFileFilter, NoTestDirFileFilter
 from mclocalizer.inspection import RepoInspector, TargetTracker
 
@@ -46,6 +47,7 @@ def main() -> int:
     result_path = "result.csv"
     summary_path = "summary.csv"
     tracker = TargetTracker()
+    blame_gen = BlameExtension(args.repo, file_filters, False)
     with open(result_path, "w", newline="") as f:
         writer = csv.writer(f, delimiter=",")
         writer.writerow(["Commit hash", "Changed targets", "Blame"])
@@ -63,7 +65,7 @@ def main() -> int:
                         [
                             report.commit.hash,
                             "; ".join(str(t) for t in report.targets),
-                            "; ".join(report.extra["szz"]),
+                            blame_gen.process(report),
                         ]
                     )
                 pbar.update(1)

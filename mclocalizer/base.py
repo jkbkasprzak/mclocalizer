@@ -1,7 +1,7 @@
 import abc
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Tuple
+from typing import Tuple
 
 import pydriller as pyd
 
@@ -114,5 +114,21 @@ class CommitReport:
     "Report kind"
     targets: Tuple[Target] = tuple()
     "Targets that were changed by the commit"
-    extra: Dict[str, any] = field(default_factory=dict)
-    "Extra information regarding commit"
+
+
+class Extension(abc.ABC):
+    """
+    Abstract class for generating additional text information for CommitReport.
+    """
+
+    @abc.abstractmethod
+    def process(self, commit_report: CommitReport) -> str:
+        """
+        Process report and get information in human readable form.
+
+        :param commit_report: commit report to be processed
+        :type commit_report: CommitReport
+        :returns: human readable string with additional information.
+        :rtype: str
+        """
+        pass
