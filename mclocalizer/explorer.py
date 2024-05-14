@@ -46,8 +46,9 @@ class JavaClassExplorer(TargetExplorer):
     ) -> None:
         classes = self.explore_source(source)
         for changed_line, _ in modified_lines:
+            # handle one-based numbering from pydriller
+            changed_line = changed_line - 1
             for java_class, class_start, class_end in classes:
-                # TODO: Verify if this check is correct (consistent indexing)
                 if class_start <= changed_line and changed_line <= class_end:
                     self._add_target(java_class)
 
@@ -55,6 +56,7 @@ class JavaClassExplorer(TargetExplorer):
         self, source: bytes
     ) -> List[Tuple[mctarget.JavaClassTarget, int, int]]:
         """Find java top level classes in source code.
+        Line numbers for class start and end are zero based and inclusive.
 
         :param source: java source code
         :type source: bytes
